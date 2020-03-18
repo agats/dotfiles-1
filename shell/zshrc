@@ -6,13 +6,14 @@ ZSH_THEME='powerlevel10k/powerlevel10k'
 
 plugins=(
   git
-  bundler
   brew
-  gem
   history-substring-search
   colored-man-pages
   vi-mode
   git-auto-fetch
+  zsh-interactive-cd
+  fd
+  ripgrep
 )
 
 # Returns whether the given command is executable or aliased.
@@ -40,9 +41,6 @@ _prepend_to_path $HOME/.local/bin
 export EDITOR='vim'
 
 DISABLE_UPDATE_PROMPT=true
-
-# for Homebrew installed rbenv
-if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 bindkey -v # vi mode for shell
 bindkey -e # enable C-x-e for shell editor
@@ -93,6 +91,7 @@ POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
   command_execution_time
   status
   background_jobs
+  virtualenv
   time
   battery
   vi_mode
@@ -116,6 +115,8 @@ POWERLEVEL9K_BATTERY_VERBOSE=false
 # https://user-images.githubusercontent.com/704406/43988708-64c0fa52-9d4c-11e8-8cf9-c4d4b97a5200.png
 POWERLEVEL9K_BATTERY_BACKGROUND='grey19'
 
+POWERLEVEL9K_VIRTUALENV_BACKGROUND='green4'
+
 # Source local version of zshrc.
 if [[ -f ~/.zshrc.local ]]; then
   source ~/.zshrc.local
@@ -124,49 +125,31 @@ fi
 # Source Oh-My-ZSH.
 source $ZSH/oh-my-zsh.sh
 
-# Update completion scripts (which should be defined by homebrew and oh-my-zsh).
-rm -f ~/.zcompdump && compinit
-
 # Source fzf scripts via via local installation.
 if [ -e ~/.fzf ]; then
   _append_to_path ~/.fzf/bin
+  # Source fzf key bindings and auto-completion.
+  source ~/.fzf/shell/key-bindings.zsh
+  source ~/.fzf/shell/completion.zsh
 fi
 
 if _has rg; then
   export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 fi
 
+if _has bat; then
+  # Export theme for http://github.com/sharkdp/bat.
+  export BAT_THEME="TwoDark"
+fi
+
 # Configure fzf (if available).
 if _has fzf; then
-  # Source fzf key bindings and auto-completion.
-  if [ -e /usr/local/opt/fzf/shell/completion.zsh ]; then
-    # Source fzf scripts via Homebrew.
-    source /usr/local/opt/fzf/shell/key-bindings.zsh
-    source /usr/local/opt/fzf/shell/completion.zsh
-  elif [ -e /usr/share/doc/fzf/examples/key-bindings.zsh ]; then
-    source /usr/share/doc/fzf/examples/key-bindings.zsh
-  elif [ -e ~/.fzf ]; then
-    source ~/.fzf/shell/key-bindings.zsh
-    source ~/.fzf/shell/completion.zsh
-  elif [ -f ~/.fzf.zsh ]; then
-    # Auto-generated completion script when installing from custom path.
-    source ~/.fzf.zsh
-  fi
-
   if _has fd; then
     # Use fd for fzf.
     export FZF_DEFAULT_COMMAND='fd --type f --follow --hidden'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     # Use fd for fzf directory search.
     export FZF_ALT_C_COMMAND='fd --type d --color never'
-  elif _has rg; then
-    # Use ripgrep for fzf.
-    export FZF_DEFAULT_COMMAND='rg --files --hidden'
-  fi
-  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-
-  # Source fzf-cd plugin.
-  if [[ -f ~/.zsh-interactive-cd.plugin.zsh ]]; then
-    source ~/.zsh-interactive-cd.plugin.zsh
   fi
 
   # Display source tree and file preview for CTRL-T and ALT-C.
@@ -182,16 +165,6 @@ if _has fzf; then
   # Having `bat` or `highlight` (or any of the other binaries below) installed
   # enables syntax highlighting.
   export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || highlight -O ansi -l {} || coderay {} || rougify {} || cat {}) 2> /dev/null | head -200'"
-
-  if _has bat; then
-    # Export theme for http://github.com/sharkdp/bat.
-    export BAT_THEME="TwoDark"
-  fi
-fi
-
-# Alias hub and git, such that we can use hub commands with git.
-if _has hub; then
-  eval "$(hub alias -s)"
 fi
 
 # Dircolors must be set last, since oh-my-zsh seems to rewrite those values.
@@ -200,3 +173,10 @@ if [[ "$(uname -s)" == "Linux" ]]; then
 else
   export LSCOLORS='ExFxBxDxCxegedabagacad'
 fi
+
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+clear
+
+neofetch

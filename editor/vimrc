@@ -18,10 +18,36 @@ set number
 set numberwidth=5
 set laststatus=2 " Always display the status line
 
-" Softtabs, 2 spaces
-set tabstop=2
-set shiftwidth=2
+" Softtabs, 4 spaces
+set tabstop=4
+set shiftwidth=4
 set expandtab
+
+syntax on
+
+set number
+set rnu
+set linebreak
+set showbreak=+++
+set textwidth=100
+set colorcolumn=100
+set showmatch
+set errorbells
+set visualbell
+set hlsearch
+set smartcase
+set ignorecase
+set incsearch
+set autoindent
+set expandtab
+set shiftwidth=4
+set smartindent
+set smarttab
+set softtabstop=4
+
+set ruler
+set undolevels=1000
+set backspace=indent,eol,start
 
 " Tab completion options
 " (only complete to the longest unambiguous match, and show a menu)
@@ -56,11 +82,11 @@ if executable('node')
   Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 endif
 
-Plug 'sheerun/vim-polyglot', { 'tag': 'v3.9.0' }
+Plug 'sheerun/vim-polyglot', { 'tag': 'v4.2.0' }
 Plug 'google/vim-maktaba', { 'tag': 'v0.15.0' }
 Plug 'bazelbuild/vim-bazel'
 
-Plug 'altercation/vim-colors-solarized'
+"Plug 'altercation/vim-colors-solarized'
 Plug 'ryanoasis/vim-devicons'
 
 Plug 'tpope/vim-scriptease'
@@ -70,6 +96,16 @@ Plug 'psliwka/vim-smoothie'
 Plug 'tpope/vim-fugitive', { 'tag': 'v3.0' }
 Plug 'tpope/vim-rhubarb'
 Plug 'airblade/vim-gitgutter'
+
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
+Plug 'ruanyl/vim-gh-line'
+
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'pangloss/vim-javascript'
+Plug 'jelera/vim-javascript-syntax'
+Plug 'mxw/vim-jsx'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'isRuslan/vim-es6'
 call plug#end()
 
 " Map ctrl-n to toggle NERDTree.
@@ -87,14 +123,18 @@ set mouse=a " Enable mouse.
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.
 if (&t_Co > 2 || has("gui_running"))
-  syntax on
-  set hlsearch
+  "syntax on
+  "set hlsearch
 
   " Color scheme
-  syntax enable
-  set background=dark
+  "syntax enable
+  "set background=dark
   " solarized won't exist if we didn't run :PlugInstall
-  silent! colorscheme solarized
+  "silent! colorscheme solarized
+  " Make vueSurroundingTag coloring match htmlTag. This is a hack. We match the rule found below:
+  " https://github.com/altercation/vim-colors-solarized/blob/528a59f26d12278698bb946f8fb82a63711eec21/colors/solarized.vim#L762
+  " Unfortunately my VimScript isn't good enough to make this not hardcoded... :(
+  "hi! vueSurroundingTag cterm=NONE term=NONE ctermfg=10 ctermbg=NONE
 endif
 
 " Only do this part when compiled with support for autocommands.
@@ -307,3 +347,4 @@ endif
 if filereadable(glob("~/.vimrc.local"))
   source ~/.vimrc.local
 endif
+
